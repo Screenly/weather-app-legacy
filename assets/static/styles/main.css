@@ -1,732 +1,352 @@
+/* =========================================================================
+   Screenly Weather App — design tokens
+   A single source of truth for color, type, spacing, radii and elevation.
+   ========================================================================= */
+:root {
+  color-scheme: dark;
+
+  /* Type ----------------------------------------------------------------- */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Fluid root size: scales smoothly from phones to 4K signage, and is
+     symmetric across orientation because it sums vw + vh.
+     ~27px @1080p · ~36px @1440p · ~54px @4K */
+  --font-size-root: clamp(16px, 0.9vw + 0.9vh, 60px);
+
+  /* Foreground ----------------------------------------------------------- */
+  --color-text: #fff;
+  --color-text-muted: rgb(255 255 255 / 0.72);
+
+  /* Brand (Screenly purple) ---------------------------------------------- */
+  --color-accent: #9b4ddb;
+  --color-accent-strong: #7732b7;
+
+  /* Frosted-glass surfaces ----------------------------------------------- */
+  --surface: rgb(255 255 255 / 0.10);
+  --surface-strong: rgb(255 255 255 / 0.16);
+  --surface-border: rgb(255 255 255 / 0.20);
+  --blur: 16px;
+
+  /* Spacing scale -------------------------------------------------------- */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+
+  /* Radii ---------------------------------------------------------------- */
+  --radius-md: 1.25rem;
+  --radius-pill: 999px;
+
+  /* Elevation ------------------------------------------------------------ */
+  --shadow-text: 0 0.08em 0.5em rgb(0 0 0 / 0.45);
+  --shadow-card: 0 0.5em 2rem rgb(0 0 0 / 0.28);
+
+  /* Legibility scrim painted over the background photo ------------------- */
+  --scrim: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0.45) 0%,
+    rgb(0 0 0 / 0.05) 28%,
+    rgb(0 0 0 / 0.10) 62%,
+    rgb(0 0 0 / 0.58) 100%
+  );
+}
+
+/* =========================================================================
+   Reset
+   ========================================================================= */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-}
-
-* {
   margin: 0;
 }
 
+/* =========================================================================
+   Webfont — Inter, self-hosted and vendored from the Bun-managed
+   @fontsource/inter package (see sync-fonts.js). No third-party CDN.
+   ========================================================================= */
 @font-face {
-  font-family: Barlow;
+  font-family: Inter;
   font-style: normal;
-  font-weight: normal;
-  src: url("../fonts/Barlow-Regular.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+  src: url("/static/fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/static/fonts/inter-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/static/fonts/inter-latin-700-normal.woff2") format("woff2");
+}
+
+/* =========================================================================
+   Base
+   ========================================================================= */
+html {
+  font-size: var(--font-size-root);
 }
 
 html,
 body {
-  height: 100%;
-  font-size: 16px;
+  block-size: 100%;
 }
 
 body {
-  background-color: gray;
+  margin: 0;
+  min-block-size: 100%;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.3;
+  background-color: #1b2735;
+  background-image: url("/static/images/bg/default-min.jpg");
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url("/static/images/bg/default-min.jpg");
   background-size: cover;
-  color: #fff;
-  font-family: Barlow, sans-serif;
+  /* The JS swaps the photo on weather change — cross-fade the swap. */
+  transition: background-image 600ms ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+/* Gradient scrim so white text stays readable over any photo. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--scrim);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* =========================================================================
+   Layout shell
+   ========================================================================= */
 .content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-  height: 100%;
+  gap: var(--space-3);
+  block-size: 100%;
+  padding: clamp(1.25rem, 3.5vmin, 4rem);
 }
 
+/* =========================================================================
+   Header — location pills + upgrade banner
+   ========================================================================= */
 .header {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .location {
   display: flex;
-  flex: 1;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: 0.85rem;
 }
 
+/* Each location fact (city / time / date) is a frosted pill. */
 .location-item {
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
-  max-width: fit-content;
-}
-
-.location-item + .location-item {
-  margin-left: 2rem;
+  gap: 0.5em;
+  padding: 0.45em 0.95em;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .location-item img {
-  margin-right: 10px;
-  width: 0.9rem;
+  inline-size: 1em;
+  block-size: auto;
+  opacity: 0.85;
 }
 
 .upgrade-banner {
-  background: #7732b7;
-  border-radius: 60px;
-  color: #fff;
   display: none;
-  font-size: 10px;
-  padding: 10px 20px;
+  align-items: center;
+  padding: 0.7em 1.4em;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: #fff;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  width: fit-content;
+  box-shadow: var(--shadow-card);
+  transition: transform 200ms ease, filter 200ms ease;
 }
 
+.upgrade-banner:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+/* Toggled on by main.js for non-Screenly devices. */
 .visible {
-  display: inline-block;
+  display: inline-flex;
 }
 
+/* =========================================================================
+   Footer — current conditions + forecast strip
+   ========================================================================= */
 .footer {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-#current-temp {
-  vertical-align: top;
-}
-
-.weather-condition {
+.current-weather {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Current condition (icon + label) as a frosted pill. */
+.weather-condition {
+  display: inline-flex;
   align-items: center;
+  gap: 0.5em;
+  align-self: flex-start;
+  padding: 0.4em 1em 0.4em 0.7em;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  font-size: 1rem;
+}
+
+#current-weather-icon {
+  inline-size: 1.6em;
+  block-size: auto;
 }
 
 #current-weather-status {
-  margin-left: 8px;
   text-transform: capitalize;
 }
 
+/* Hero temperature. */
+.temperature {
+  display: flex;
+  align-items: flex-start;
+  line-height: 0.9;
+  text-shadow: var(--shadow-text);
+}
+
+#current-temp {
+  font-size: 7rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+#current-temp-scale {
+  margin-block-start: 0.15em;
+  font-size: 2.5rem;
+  color: var(--color-text-muted);
+}
+
+/* Forecast strip --------------------------------------------------------- */
 #weather-item-list {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   align-self: flex-end;
-  margin-bottom: 25px;
 }
 
 .dummy-node {
   display: none !important;
 }
 
+/* Each forecast slot is a frosted glass tile. */
 .weather-item {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 4.5em;
+  padding: 0.9em 1.1em;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow-card);
+}
+
+.weather-item .item-temp-degree {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .weather-item .item-icon {
-  margin-top: 0.5rem;
+  inline-size: 2.5em;
+  block-size: auto;
 }
 
 .weather-item .item-time {
-  margin-top: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
   white-space: nowrap;
 }
 
-@media screen and (min-width: 800px) {
-  .content {
-    padding: 4rem;
-  }
-
-  .location {
-    font-size: 0.875rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 7.5rem;
-    line-height: 6rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.5rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 2.5rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 0.75rem;
-  }
-}
-
-@media screen and (min-width: 1280px) {
-  html {
-    font-size: 24px;
-  }
-
-  .content {
-    padding: 3.3rem;
-  }
-
-  .location {
-    font-size: 0.75rem;
-  }
-
-  .upgrade-banner {
-    font-size: 16px;
-    padding: 10px 30px;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.3rem;
-    line-height: 7rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 3rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1.25rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 1920px) {
-  html {
-    font-size: 40px;
-  }
-
-  .content {
-    padding: 2.25rem;
-  }
-
-  .location {
-    font-size: 0.6rem;
-  }
-
-  .upgrade-banner {
-    font-size: 24px;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.3rem;
-    line-height: 7rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 2.3rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 2560px) {
-  html {
-    font-size: 48px;
-  }
-
-  .content {
-    padding: 3.125rem;
-  }
-
-  .location {
-    font-size: 0.66rem;
-  }
-
-  .upgrade-banner {
-    font-size: 32px;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.3rem;
-    line-height: 7rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 2.6rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 3840px) {
-  html {
-    font-size: 64px;
-  }
-
-  .content {
-    padding: 3.125rem;
-  }
-
-  .location {
-    font-size: 0.75rem;
-  }
-
-  .upgrade-banner {
-    font-size: 48px;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.3rem;
-    line-height: 7rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 3.3rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (orientation: portrait) {
-  html {
-    font-size: 20px;
-  }
-
-  .content {
-    padding: 1rem 1.1rem 1.1rem;
-  }
-
+/* =========================================================================
+   Portrait — the only layout (not just font-size) changes left
+   ========================================================================= */
+@media (orientation: portrait) {
   .header {
     flex-direction: column-reverse;
     align-items: center;
+    text-align: center;
   }
 
   .location {
-    flex-direction: column;
-    font-size: 0.9rem;
     justify-content: center;
-    margin-top: 1.2rem;
-    width: 100%;
-  }
-
-  .location-item + .location-item {
-    margin-top: 0.3rem;
-    margin-left: 0;
-  }
-
-  .location-item img {
-    width: 0.9rem;
-    margin-right: 5px;
-  }
-
-  .upgrade-banner {
-    font-size: 0.6rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
+    inline-size: 100%;
   }
 
   #current-temp {
     font-size: 6rem;
-    line-height: 4.5rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2rem;
   }
 
   #weather-item-list {
+    align-self: stretch;
     justify-content: space-between;
-    align-self: unset;
-    margin-top: 25px;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 1rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 0.6rem;
-  }
-
-  .footer {
-    flex-direction: column;
   }
 }
 
-@media screen and (min-width: 480px) and (orientation: portrait) {
-  html {
-    font-size: 16px;
-  }
-
-  .content {
-    padding: 2rem 2.5rem 2.5rem;
-  }
-
-  .location {
-    flex-direction: row;
-    font-size: 0.875rem;
-    margin-top: 1.6rem;
-  }
-
-  .location-item + .location-item {
-    margin-left: 2.5rem;
-  }
-
-  .location-item img {
-    margin-right: 10px;
-    width: 1.2rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 7.5rem;
-    line-height: 6rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.5rem;
-  }
-
-  #weather-item-list {
-    margin-top: 30px;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 2.8rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1.25rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 0.75rem;
-  }
-}
-
-@media screen and (min-width: 720px) and (orientation: portrait) {
-  html {
-    font-size: 24px;
-  }
-
-  .content {
-    padding: 2.66rem 2.7rem 2.7rem;
-  }
-
-  .location {
-    font-size: 0.875rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.33rem;
-    line-height: 6.5rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  #weather-item-list {
-    margin-top: 30px;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 1.5rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1.25rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 1080px) and (orientation: portrait) {
-  html {
-    font-size: 40px;
-  }
-
-  .content {
-    padding: 3.25rem 2.1rem 2.1rem;
-  }
-
-  .location {
-    font-size: 0.9rem;
-  }
-
-  .location-item + .location-item {
-    margin-left: 1rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.5rem;
-    line-height: 6.5rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  #weather-item-list {
-    margin-top: 75px;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 1.5rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1.25rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 1440px) and (orientation: portrait) {
-  html {
-    font-size: 48px;
-  }
-
-  .content {
-    padding: 2.66rem;
-  }
-
-  .location {
-    font-size: 0.66rem;
-    margin-top: 1.8rem;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-temp {
-    font-size: 8.33rem;
-    line-height: 6.5rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.75rem;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 2.8rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
-  }
-}
-
-@media screen and (min-width: 2160px) and (orientation: portrait) {
-  html {
-    font-size: 64px;
-  }
-
-  .content {
-    padding: 3.24rem 2.5rem 2.5rem;
-  }
-
-  .location {
-    font-size: 0.9rem;
-    margin-top: 1.42rem;
-  }
-
-  .location-item img {
-    margin-right: 20px;
-  }
-
-  .weather-condition {
-    font-size: 1rem;
-  }
-
-  #current-weather-icon {
-    width: 2rem;
-  }
-
-  #current-weather-status {
-    margin-left: 20px;
-  }
-
-  #current-temp {
-    font-size: 7.8rem;
-    margin-bottom: 2rem;
-  }
-
-  #current-temp-scale {
-    font-size: 2.5rem;
-  }
-
-  #weather-item-list {
-    margin-top: 30px;
-  }
-
-  .weather-item + .weather-item {
-    margin-left: 3.67rem;
-  }
-
-  .weather-item .item-temp-degree {
-    font-size: 1rem;
-  }
-
-  .weather-item .item-icon {
-    width: 2.5rem;
-  }
-
-  .weather-item .item-time {
-    font-size: 1rem;
+/* =========================================================================
+   Accessibility / device courtesy
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
   }
 }

@@ -5,6 +5,10 @@
 // referenced at /static/..., so the minified output must overwrite the source.
 
 import { Glob } from 'bun'
+import { run as syncFonts } from './sync-fonts.js'
+
+// Vendor the Bun-managed webfonts into ./assets before minifying.
+await syncFonts()
 
 const targets = [
   { label: 'JS', glob: 'assets/static/js/*.js' },

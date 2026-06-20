@@ -5,7 +5,13 @@ const Layout = (props) => html`<!DOCTYPE html>
     <head>
       <title>Screenly Weather App - Weather Forecast</title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="preload" href="/static/fonts/Barlow-Regular.woff" as="font" />
+      <link
+        rel="preload"
+        href="/static/fonts/inter-latin-400-normal.woff2"
+        as="font"
+        type="font/woff2"
+        crossorigin
+      />
       <link rel="stylesheet" href="/static/styles/main.css" />
       <script
         src="https://js.sentry-cdn.com/${props.sentryId}.min.js"

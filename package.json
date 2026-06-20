@@ -5,12 +5,14 @@
   "main": "src/index.jsx",
   "scripts": {
     "test": "jest --verbose",
+    "sync-fonts": "bun run sync-fonts.js",
     "dev": "wrangler dev",
     "build": "bun run build.js",
     "deploy": "wrangler deploy --env=dev"
   },
   "license": "MIT",
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
     "hono": "^2.0.7"
   },
   "devDependencies": {
