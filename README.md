@@ -32,8 +32,8 @@ Run the project in dev mode
 bun run dev
 ```
 
-Publish worker
+Deploy worker
 
 ```bash
-bunx wrangler publish --env [environment name]
+bunx wrangler deploy --env [environment name]
 ```

@@ -16,13 +16,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
       - name: Publish
-        uses: cloudflare/wrangler-action@4c10c1822abba527d820b29e6333e7f5dac2cabd # 2.0.0
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
           environment: production
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           secrets: |
             OPEN_WEATHER_API_KEY
-          command: publish --env production
+          command: deploy --env production
         env:
           OPEN_WEATHER_API_KEY: ${{ secrets.OPEN_WEATHER_API_KEY_PRODUCTION }}
