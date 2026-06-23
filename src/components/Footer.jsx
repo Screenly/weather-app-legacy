@@ -30,7 +30,7 @@ const Footer = () => html`
 
   <div class="weather-item dummy-node">
     <span class="item-time"></span>
-    <img src="" class="item-icon" alt="" width="100" height="100" />
+    <img class="item-icon" alt="" width="100" height="100" />
     <span class="item-temp-degree"><span class="item-temp"></span><sup>°</sup></span>
   </div>
   `

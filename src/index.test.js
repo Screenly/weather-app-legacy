@@ -14,10 +14,12 @@ mock.module('hono/cloudflare-workers', () => ({
 const makeCache = () => {
   const store = new Map()
   const keyOf = (k) => (typeof k === 'string' ? k : k.url)
+  // Clone on store/return, mirroring the real Cache API, so a cached Response
+  // body is never consumed twice ("Body has already been used").
   return {
     store,
-    match: async (k) => store.get(keyOf(k)),
-    put: async (k, res) => { store.set(keyOf(k), res) }
+    match: async (k) => store.get(keyOf(k))?.clone(),
+    put: async (k, res) => { store.set(keyOf(k), res.clone()) }
   }
 }
 
