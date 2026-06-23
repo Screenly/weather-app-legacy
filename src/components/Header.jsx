@@ -7,7 +7,7 @@ const Header = () => html`
       <span id="city"></span>
     </span>
     <span class="clock anim" style="--d: 80ms">
-      <span id="time"></span><span class="date" id="date"></span>
+      <span id="time"></span><span class="clock-sep">·</span><span class="date" id="date"></span>
     </span>
   </header>
   `

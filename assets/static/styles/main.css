@@ -183,8 +183,7 @@ body[data-night="true"]        { --accent: #b6a6f2; }
   white-space: nowrap;
 }
 
-.clock .date::before {
-  content: "·";
+.clock-sep {
   margin: 0 0.6em;
   opacity: 0.6;
 }

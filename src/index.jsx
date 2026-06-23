@@ -17,16 +17,21 @@ app.get('/', async (c) => {
   const qLat = c.req.query(locationQueryParams.lat)
   const qLng = c.req.query(locationQueryParams.lng)
 
-  if (!(qLat || qLng)) {
-    const lat = c.req.header(locationHeaders.lat) || defaultLocation.lat
-    const lng = c.req.header(locationHeaders.lng) || defaultLocation.lng
+  // Redirect to a canonical URL whenever either coordinate is missing, filling
+  // gaps from the Screenly location headers or the default location, so the
+  // render path always has both lat and lng.
+  if (!qLat || !qLng) {
+    const lat = qLat || c.req.header(locationHeaders.lat) || defaultLocation.lat
+    const lng = qLng || c.req.header(locationHeaders.lng) || defaultLocation.lng
     const coordinates = trimCoordinates({ lat, lng })
+
+    const url = new URL(c.req.url)
+    url.searchParams.set('lat', coordinates.lat)
+    url.searchParams.set('lng', coordinates.lng)
 
     return new Response(null, {
       status: 301,
-      headers: {
-        Location: `${c.req.url}?lat=${coordinates.lat}&lng=${coordinates.lng}`
-      },
+      headers: { Location: url.toString() }
     })
   } else {
     const cache = caches.default

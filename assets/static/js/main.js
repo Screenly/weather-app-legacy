@@ -46,6 +46,9 @@
   // own device locale, which is effectively random).
   const FALLBACK_LOCALE = 'en-GB'
 
+  // Right-to-left primary language subtags that appear in the locale map.
+  const rtlLanguages = ['ar', 'fa', 'he', 'ps', 'dv', 'ur', 'ckb', 'sd', 'yi']
+
   const buildFormatters = () => {
     // Pin the Gregorian calendar so the date always matches the (Gregorian)
     // forecast — otherwise locales like ar-SA would render a Hijri date.
@@ -73,9 +76,11 @@
     locale = resolveLocale(code)
     buildFormatters()
     // Reflect the actual content locale on <html> so assistive tech uses the
-    // right pronunciation rules (the SSR shell ships a neutral lang="en").
+    // right pronunciation rules and text direction (the SSR shell ships a
+    // neutral lang="en").
     if (typeof document !== 'undefined') {
       document.documentElement.lang = locale
+      document.documentElement.dir = rtlLanguages.includes(locale.split('-')[0]) ? 'rtl' : 'ltr'
     }
   }
 

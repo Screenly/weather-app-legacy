@@ -46,6 +46,16 @@ describe('Routing', () => {
     expect(res.headers.get('Location')).toContain('lng=')
   })
 
+  it('redirects when only one coordinate is provided', async () => {
+    const res = await app.request('http://localhost/?lat=51.5')
+    expect(res.status).toBe(301)
+    const location = res.headers.get('Location')
+    expect(location).toContain('lat=51.5')
+    expect(location).toContain('lng=')
+    // No malformed double query string.
+    expect(location.match(/\?/g)).toHaveLength(1)
+  })
+
   it('renders the page HTML via hono JSX (server-side)', () => {
     // Mirrors the route's `new Response((<App/>).toString())`.
     const body = jsx(App, { env: 'production', lat: '51.5', lng: '-0.12' }).toString()
