@@ -48,7 +48,7 @@ describe('Routing', () => {
 
   it('renders the page HTML via hono JSX (server-side)', () => {
     // Mirrors the route's `new Response((<App/>).toString())`.
-    const body = jsx(App, { env: 'dev', lat: '51.5', lng: '-0.12' }).toString()
+    const body = jsx(App, { env: 'production', lat: '51.5', lng: '-0.12' }).toString()
     expect(body).toContain('<!DOCTYPE html>')
     expect(body).toContain('id="weather-item-list"')
     expect(body).toContain('weather-fx')
@@ -63,7 +63,7 @@ describe('Page caching (/ route)', () => {
     globalThis.caches = { default: cache }
     const ctx = { waitUntil: (p) => puts.push(p), passThroughOnException () {} }
 
-    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, {}, ctx)
+    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, { ENV: 'production' }, ctx)
 
     expect(res.status).toBe(200)
     expect(await res.text()).toContain('<!DOCTYPE html>')
@@ -80,7 +80,7 @@ describe('Page caching (/ route)', () => {
     globalThis.caches = { default: { match: async () => cached, put: async () => {} } }
     const ctx = { waitUntil () {}, passThroughOnException () {} }
 
-    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, {}, ctx)
+    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, { ENV: 'production' }, ctx)
 
     expect(res.status).toBe(200)
     expect(await res.text()).toBe('CACHED PAGE')

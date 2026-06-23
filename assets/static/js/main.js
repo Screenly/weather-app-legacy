@@ -72,6 +72,11 @@
   const setLocale = (code) => {
     locale = resolveLocale(code)
     buildFormatters()
+    // Reflect the actual content locale on <html> so assistive tech uses the
+    // right pronunciation rules (the SSR shell ships a neutral lang="en").
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale
+    }
   }
 
   // Build defaults up front so the clock works even before any data arrives.
