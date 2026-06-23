@@ -75,12 +75,19 @@
   const setLocale = (code) => {
     locale = resolveLocale(code)
     buildFormatters()
-    // Reflect the actual content locale on <html> so assistive tech uses the
-    // right pronunciation rules and text direction (the SSR shell ships a
-    // neutral lang="en").
+    // The chrome is authored in English (LTR); only the city, date and time
+    // render in the location's language. Tag just those elements with the right
+    // lang/dir so assistive tech and RTL scripts (e.g. ar) are handled without
+    // mirroring the whole LTR layout.
     if (typeof document !== 'undefined') {
-      document.documentElement.lang = locale
-      document.documentElement.dir = rtlLanguages.includes(locale.split('-')[0]) ? 'rtl' : 'ltr'
+      const dir = rtlLanguages.includes(locale.split('-')[0]) ? 'rtl' : 'ltr'
+      for (const id of ['city', 'date', 'time']) {
+        const el = document.querySelector(`#${id}`)
+        if (el) {
+          el.lang = locale
+          el.dir = dir
+        }
+      }
     }
   }
 
@@ -404,7 +411,7 @@
 
     ctaIndex = (ctaIndex + 1) % ctaMessages.length
     const next = ctaMessages[ctaIndex]
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
 
     if (reduceMotion) {
       msg.innerText = next
@@ -423,7 +430,7 @@
     const { userAgent } = navigator
     const isScreenlyDevice = userAgent.includes('screenly-viewer')
 
-    if (!isScreenlyDevice) {
+    if (banner && !isScreenlyDevice) {
       banner.classList.add('visible')
       clearInterval(ctaTimer)
       ctaTimer = setInterval(rotateCta, 5000)
@@ -443,8 +450,13 @@
   }
 
   // Only auto-run in a real browser; under a test runner there is no document.
+  // The script is loaded async, so wait for the DOM before reading elements.
   if (typeof document !== 'undefined') {
-    init()
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init)
+    } else {
+      init()
+    }
   }
 
   // Expose pure helpers for unit tests. In the browser `module` is undefined,
