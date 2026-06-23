@@ -312,6 +312,8 @@
 
   const updateWeather = (list) => {
     clearTimeout(weatherTimer)
+    if (!Array.isArray(list) || list.length === 0) return
+
     const currentIndex = findCurrentWeatherItem(list)
 
     const currentItem = list[currentIndex]
@@ -386,6 +388,8 @@
     } catch (e) {
       console.log(e)
     }
+    // Reschedule the next refresh so updates keep coming every 2 hours.
+    refreshTimer = setTimeout(fetchWeather, 120 * 60 * 1000)
   }
 
   /**
@@ -443,10 +447,9 @@
   }
 
   const init = () => {
+    // fetchWeather() reschedules itself every 2 hours.
     fetchWeather()
     setBanner()
-    // Refresh weather from server every 2 hours
-    refreshTimer = setTimeout(fetchWeather, 120 * 60 * 1000)
   }
 
   // Only auto-run in a real browser; under a test runner there is no document.
