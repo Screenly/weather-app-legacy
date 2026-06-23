@@ -94,8 +94,9 @@ describe('date localization (#1)', () => {
   it('pins the Gregorian calendar even for ar-SA (not Hijri)', () => {
     setLocale('SA')
     const date = dateAt(3)
-    // Gregorian day 20 in Arabic-Indic digits; would be ٥ (5 Muharram) if Hijri.
-    expect(date).toContain('٢٠') // ٢٠
+    // Gregorian day 20 (in Latin or Arabic-Indic digits, depending on ICU);
+    // a Hijri rendering would show day 5 in Muharram instead.
+    expect(date).toMatch(/20|٢٠/)
     expect(date).not.toMatch(/محرم/) // محرم (Muharram)
   })
 })
