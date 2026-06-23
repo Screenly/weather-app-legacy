@@ -81,8 +81,9 @@ body {
   background-size: cover;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* main.js swaps the photo + sets data-cond; ease both transitions. */
-  transition: background-image 600ms ease, --accent 1.1s ease;
+  /* main.js sets data-cond; ease the reactive accent between conditions.
+     (background-image isn't animatable, so the photo swap is instant.) */
+  transition: --accent 1.1s ease;
 }
 
 ::selection {

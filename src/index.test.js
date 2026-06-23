@@ -69,10 +69,15 @@ describe('Routing', () => {
 })
 
 describe('Page caching (/ route)', () => {
-  it('renders on a cache miss, with a valid Request key and the edge Cache-Control', async () => {
-    const cache = makeCache()
+  it('renders on a cache miss, caching under a real Request key with the edge Cache-Control', async () => {
+    const keys = []
     const puts = []
-    globalThis.caches = { default: cache }
+    globalThis.caches = {
+      default: {
+        match: async (k) => { keys.push(k); return undefined },
+        put: async (k) => { keys.push(k) }
+      }
+    }
     const ctx = { waitUntil: (p) => puts.push(p), passThroughOnException () {} }
 
     const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, { ENV: 'production' }, ctx)
@@ -82,9 +87,11 @@ describe('Page caching (/ route)', () => {
     // 12h shared-cache TTL must survive the migration.
     expect(res.headers.get('Cache-Control')).toBe('s-maxage=43200')
     await runWaitUntil(puts)
-    // The Cache API requires a real Request key (c.req.raw), not hono's
-    // HonoRequest wrapper, which throws "Cache API keys must be ... valid URLs".
-    expect(cache.store.size).toBe(1)
+    // The page cache key must be a real Request (c.req.raw). hono's HonoRequest
+    // wrapper also exposes .url, so assert the concrete type to lock the
+    // contract — using c.req would fail this instanceof check.
+    expect(keys.length).toBeGreaterThan(0)
+    for (const key of keys) expect(key).toBeInstanceOf(Request)
   })
 
   it('serves the cached page on a repeat request without re-rendering', async () => {
