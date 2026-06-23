@@ -1,7 +1,8 @@
 import { Hono } from 'hono'
 import { cache } from 'hono/cache'
 import { logger } from 'hono/logger'
-import { serveStatic } from 'hono/serve-static.module'
+import { serveStatic } from 'hono/cloudflare-workers'
+import manifest from '__STATIC_CONTENT_MANIFEST'
 import { jsx } from 'hono/jsx'
 import App from './components/App'
 import weather from './routes/weather'
@@ -11,7 +12,7 @@ import { trimCoordinates } from './utils'
 const app = new Hono()
 
 app.use('*', logger())
-app.use('/static/*', serveStatic({ root: './' }))
+app.use('/static/*', serveStatic({ root: './', manifest }))
 
 app.get('/', async (c) => {
   const qLat = c.req.query(locationQueryParams.lat)
@@ -30,13 +31,15 @@ app.get('/', async (c) => {
     })
   } else {
     const cache = caches.default
-    const key = c.req
+    // hono v4's c.req is a HonoRequest wrapper; the Cache API needs the raw Request.
+    const key = c.req.raw
     let response = await cache.match(key)
 
     if (!response) {
       const coordinates = trimCoordinates({ lat: qLat, lng: qLng })
       const env = c.env.ENV
-      response = new Response(<App {...coordinates} env={env} />, {
+      const body = (<App {...coordinates} env={env} />).toString()
+      response = new Response(body, {
         status: 200,
         headers: {
           'Cache-Control': 's-maxage=43200',

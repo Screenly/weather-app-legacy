@@ -15,10 +15,10 @@
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.2.9",
     "@fontsource-variable/hanken-grotesk": "^5.2.8",
-    "hono": "^2.7.8"
+    "hono": "^4.12.27"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.19.0",
+    "@cloudflare/workers-types": "^4.20260623.1",
     "wrangler": "^4.104.0"
   },
   "ts-standard": {

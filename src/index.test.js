@@ -1,18 +1,121 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { jsx } from 'hono/jsx'
+import App from './components/App'
 
-// hono/serve-static.module targets the Workers runtime (it pulls in the
-// build-time __STATIC_CONTENT_MANIFEST). Stub it before importing the app.
-mock.module('hono/serve-static.module', () => ({
+// The Cloudflare static-assets middleware and its build-time manifest only
+// exist in the Workers runtime; stub both before importing the app.
+mock.module('__STATIC_CONTENT_MANIFEST', () => ({ default: '{}' }))
+mock.module('hono/cloudflare-workers', () => ({
   serveStatic: () => async (c, next) => next()
 }))
 
-const app = (await import('.')).default
+// A Map-backed Cache API stub serving both caches.default (SSR page cache,
+// keyed by Request) and caches.open() (the weather middleware, keyed by URL).
+const makeCache = () => {
+  const store = new Map()
+  const keyOf = (k) => (typeof k === 'string' ? k : k.url)
+  return {
+    store,
+    match: async (k) => store.get(keyOf(k)),
+    put: async (k, res) => { store.set(keyOf(k), res) }
+  }
+}
 
-describe('Test the application', () => {
+// hono's cache() middleware decides whether caching is enabled at construction
+// time (module load), from globalThis.caches. Define it BEFORE importing the
+// app so the real middleware is wired up, not the no-op fallback. (In the
+// Workers runtime caches is always defined, so this only matters under test.)
+const BASELINE_CACHE = { default: makeCache(), open: async () => makeCache() }
+globalThis.caches = BASELINE_CACHE
+
+const app = (await import('.')).default
+const ORIGINAL_FETCH = globalThis.fetch
+
+const runWaitUntil = async (promises) => { await Promise.all(promises) }
+
+afterEach(() => {
+  globalThis.caches = BASELINE_CACHE
+  globalThis.fetch = ORIGINAL_FETCH
+})
+
+describe('Routing', () => {
   it('redirects a location-less request to a default location', async () => {
     const res = await app.request('http://localhost/')
     expect(res.status).toBe(301)
     expect(res.headers.get('Location')).toContain('lat=')
     expect(res.headers.get('Location')).toContain('lng=')
+  })
+
+  it('renders the page HTML via hono JSX (server-side)', () => {
+    // Mirrors the route's `new Response((<App/>).toString())`.
+    const body = jsx(App, { env: 'dev', lat: '51.5', lng: '-0.12' }).toString()
+    expect(body).toContain('<!DOCTYPE html>')
+    expect(body).toContain('id="weather-item-list"')
+    expect(body).toContain('weather-fx')
+    expect(body).not.toContain('[object Object]')
+  })
+})
+
+describe('Page caching (/ route)', () => {
+  it('renders on a cache miss, with a valid Request key and the edge Cache-Control', async () => {
+    const cache = makeCache()
+    const puts = []
+    globalThis.caches = { default: cache }
+    const ctx = { waitUntil: (p) => puts.push(p), passThroughOnException () {} }
+
+    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, {}, ctx)
+
+    expect(res.status).toBe(200)
+    expect(await res.text()).toContain('<!DOCTYPE html>')
+    // 12h shared-cache TTL must survive the migration.
+    expect(res.headers.get('Cache-Control')).toBe('s-maxage=43200')
+    await runWaitUntil(puts)
+    // The Cache API requires a real Request key (c.req.raw), not hono's
+    // HonoRequest wrapper, which throws "Cache API keys must be ... valid URLs".
+    expect(cache.store.size).toBe(1)
+  })
+
+  it('serves the cached page on a repeat request without re-rendering', async () => {
+    const cached = new Response('CACHED PAGE', { status: 200 })
+    globalThis.caches = { default: { match: async () => cached, put: async () => {} } }
+    const ctx = { waitUntil () {}, passThroughOnException () {} }
+
+    const res = await app.request('http://localhost/?lat=51.5&lng=-0.12', {}, {}, ctx)
+
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe('CACHED PAGE')
+  })
+})
+
+describe('Weather API caching (/api/weather)', () => {
+  it('caches a 200 upstream response and serves repeats from cache', async () => {
+    const cache = makeCache()
+    globalThis.caches = { default: cache, open: async () => cache }
+
+    let fetchCount = 0
+    globalThis.fetch = async () => {
+      fetchCount++
+      return new Response(JSON.stringify({ city: { name: 'X' }, list: [] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      })
+    }
+
+    const puts = []
+    const ctx = { waitUntil: (p) => puts.push(p), passThroughOnException () {} }
+    const env = { OPEN_WEATHER_API_KEY: 'test-key' }
+    const url = 'http://localhost/api/weather?lat=1&lng=2'
+
+    const first = await app.request(url, {}, env, ctx)
+    expect(first.status).toBe(200)
+    // The middleware must apply the 3h shared-cache TTL.
+    expect(first.headers.get('Cache-Control')).toContain('s-maxage=10800')
+
+    await runWaitUntil(puts)
+
+    const second = await app.request(url, {}, env, ctx)
+    expect(second.status).toBe(200)
+    // Served from cache: the upstream was only hit once.
+    expect(fetchCount).toBe(1)
   })
 })
