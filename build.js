@@ -23,6 +23,13 @@ for (const { label, glob } of targets) {
       entrypoints: [path],
       minify: true,
       target: 'browser',
+      // main.js is a classic browser IIFE loaded via a plain <script> (no
+      // type="module"). Bun's default 'esm' format rewrites its CommonJS test
+      // hook (module.exports) into an ES module and appends `export default`,
+      // which a classic script cannot parse ("Unexpected token 'export'") so
+      // the whole script fails to run. 'iife' emits a self-contained classic
+      // script with no export. (Ignored for CSS entrypoints.)
+      format: 'iife',
       // Leave references untouched (e.g. CSS `url(/static/...)` absolute paths)
       // rather than trying to resolve and bundle them as build-time assets.
       external: ['*']

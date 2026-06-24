@@ -65,6 +65,10 @@ describe('Routing', () => {
     expect(body).toContain('id="weather-item-list"')
     expect(body).toContain('weather-fx')
     expect(body).not.toContain('[object Object]')
+    // main.js is bundled as an ES module (ends in `export default`), so it must
+    // be loaded as a module or the browser throws on the `export` token and the
+    // page never populates.
+    expect(body).toContain('<script type="module" src="/static/js/main.js">')
   })
 })
 

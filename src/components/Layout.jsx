@@ -33,7 +33,16 @@ const Layout = (props) => html`<!DOCTYPE html>
 
         gtag('config', '${props.gaId}');
       </script>
-      <script src="/static/js/main.js" async defer></script>
+      <!--
+        main.js is bundled by Bun.build, which detects its module.exports test
+        hook and emits an ES module (the bundle ends in \`export default ...\`).
+        It must therefore be loaded as type="module": a classic script cannot
+        contain \`export\` ("Unexpected token 'export'") and, even stripped of
+        the error, the lazy module factory would never be invoked. Loading it as
+        a module both parses the export and evaluates the factory, running the
+        app. Module scripts are deferred by default, so the DOM is ready.
+      -->
+      <script type="module" src="/static/js/main.js"></script>
     </head>
     <body>
       ${props.children}
