@@ -46,11 +46,16 @@ app.get('/', async (c) => {
   const qLng = c.req.query(locationQueryParams.lng)
 
   // Redirect to a canonical URL whenever either coordinate is missing, filling
-  // gaps from the Screenly location headers or the default location, so the
-  // render path always has both lat and lng.
+  // gaps so the render path always has both lat and lng. Resolution order, most
+  // to least specific: explicit query params > the Screenly player's
+  // asset-metadata headers > Cloudflare's request IP geolocation > the default.
+  // The GeoIP step (request.cf, populated by the Workers runtime at the edge)
+  // means browser/no-header traffic lands on the viewer's approximate location
+  // instead of always defaulting to San Francisco.
   if (!qLat || !qLng) {
-    const lat = qLat || c.req.header(locationHeaders.lat) || defaultLocation.lat
-    const lng = qLng || c.req.header(locationHeaders.lng) || defaultLocation.lng
+    const cf = c.req.raw.cf
+    const lat = qLat || c.req.header(locationHeaders.lat) || cf?.latitude || defaultLocation.lat
+    const lng = qLng || c.req.header(locationHeaders.lng) || cf?.longitude || defaultLocation.lng
     const coordinates = trimCoordinates({ lat, lng })
 
     const url = new URL(c.req.url)

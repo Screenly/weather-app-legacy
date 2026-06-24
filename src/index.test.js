@@ -58,6 +58,43 @@ describe('Routing', () => {
     expect(location.match(/\?/g)).toHaveLength(1)
   })
 
+  // The Workers runtime attaches IP geolocation to request.cf; emulate it here.
+  const withCf = (url, cf, headers) => {
+    const req = new Request(url, headers ? { headers } : undefined)
+    Object.defineProperty(req, 'cf', { value: cf, enumerable: true })
+    return req
+  }
+
+  it('falls back to Cloudflare GeoIP when no query params or Screenly headers', async () => {
+    const res = await app.request(withCf('http://localhost/', { latitude: '40.7128', longitude: '-74.0060' }))
+    expect(res.status).toBe(301)
+    const location = res.headers.get('Location')
+    // Trimmed to 2 decimals; this is New York, not the SF default.
+    expect(location).toContain('lat=40.71')
+    expect(location).toContain('lng=-74.01')
+  })
+
+  it('prefers Screenly location headers over GeoIP', async () => {
+    const res = await app.request(withCf(
+      'http://localhost/',
+      { latitude: '40.7128', longitude: '-74.0060' },
+      { 'x-screenly-lat': '35.68', 'x-screenly-lng': '139.69' }
+    ))
+    expect(res.status).toBe(301)
+    const location = res.headers.get('Location')
+    // Tokyo from the device headers wins over the New York IP.
+    expect(location).toContain('lat=35.68')
+    expect(location).toContain('lng=139.69')
+  })
+
+  it('falls back to the default location when GeoIP is unavailable', async () => {
+    const res = await app.request('http://localhost/')
+    expect(res.status).toBe(301)
+    const location = res.headers.get('Location')
+    expect(location).toContain('lat=37.77')
+    expect(location).toContain('lng=-122.43')
+  })
+
   it('renders the page HTML via hono JSX (server-side)', () => {
     // Mirrors the route's `new Response((<App/>).toString())`.
     const body = jsx(App, { env: 'production', lat: '51.5', lng: '-0.12', v: 'testver' }).toString()
