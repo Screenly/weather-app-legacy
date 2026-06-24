@@ -92,6 +92,9 @@ describe('Page caching (/ route)', () => {
     // contract — using c.req would fail this instanceof check.
     expect(keys.length).toBeGreaterThan(0)
     for (const key of keys) expect(key).toBeInstanceOf(Request)
+    // The key must be versioned by the asset bundle so a deploy busts the page
+    // cache instead of serving HTML that references the previous build's assets.
+    for (const key of keys) expect(new URL(key.url).searchParams.get('v')).toBeTruthy()
   })
 
   it('serves the cached page on a repeat request without re-rendering', async () => {

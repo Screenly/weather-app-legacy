@@ -10,6 +10,21 @@ import { trimCoordinates } from './utils'
 
 const app = new Hono()
 
+// A short, deploy-stable token derived from the hashed static-asset manifest.
+// It changes whenever any asset (JS/CSS/font) changes, which is exactly when a
+// deploy ships. Folding it into the page-cache key means a new deploy lands on
+// a fresh key instead of serving a previously cached HTML shell that points at
+// the previous build's assets. Without this, the 12h SSR page cache outlives a
+// deploy and pairs stale HTML with freshly served /static assets.
+const ASSET_VERSION = (() => {
+  const source = typeof manifest === 'string' ? manifest : JSON.stringify(manifest)
+  let hash = 0
+  for (let i = 0; i < source.length; i++) {
+    hash = (Math.imul(31, hash) + source.charCodeAt(i)) | 0
+  }
+  return (hash >>> 0).toString(36)
+})()
+
 app.use('*', logger())
 app.use('/static/*', serveStatic({ root: './', manifest }))
 
@@ -35,8 +50,12 @@ app.get('/', async (c) => {
     })
   } else {
     const cache = caches.default
-    // hono v4's c.req is a HonoRequest wrapper; the Cache API needs the raw Request.
-    const key = c.req.raw
+    // hono v4's c.req is a HonoRequest wrapper; the Cache API needs a raw
+    // Request. Version the key by the deployed asset bundle so each deploy busts
+    // the SSR page cache rather than serving HTML that references stale assets.
+    const keyUrl = new URL(c.req.url)
+    keyUrl.searchParams.set('v', ASSET_VERSION)
+    const key = new Request(keyUrl.toString(), c.req.raw)
     let response = await cache.match(key)
 
     if (!response) {
