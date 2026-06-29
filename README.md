@@ -2,7 +2,7 @@
 
 **Warning:** This project has been abandoned in favor of the [Weather Edge App](https://github.com/Screenly/Playground/tree/master/edge-apps/weather).
 
-![Weather App Screenshot](https://github.com/Screenly/standalone-app-store/blob/master/_assets/img/app-weather.jpg?raw=true)
+![Weather App Screenshot](docs/screenshot.jpg)
 
 This is an example asset for Screenly as part of the [Screenly Playground](https://github.com/Screenly/playground).
 
