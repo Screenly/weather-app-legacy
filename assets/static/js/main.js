@@ -287,6 +287,12 @@ import {
     updateLocation(name)
     initDateTime(timezone)
     updateWeather(list)
+    // Report the resolved location so we can track which places are popular.
+    generateAnalyticsEvent('location', {
+      app_name: 'Screenly Weather App',
+      city: name,
+      country
+    })
   }
 
   /**
