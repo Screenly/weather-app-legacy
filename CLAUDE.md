@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-This is a **legacy/abandoned** Screenly Weather App (superseded by the Weather Edge App). It is a Cloudflare Worker that server-renders a full-screen weather display for Screenly digital signage. Live at `weather.srly.io`.
+This is the Screenly Weather App. It is a Cloudflare Worker that server-renders a full-screen weather display for Screenly digital signage. Live at `weather.srly.io`.
 
 The app doubles as a Screenly advertisement: viewers are non-Screenly users, so the UI carries a rotating CTA pitching Screenly. See the auto-memory note `app-is-screenly-advertisement.md` for the CTA/accuracy guardrails.
 
