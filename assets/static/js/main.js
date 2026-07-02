@@ -1,7 +1,10 @@
 import {
   usesFahrenheit,
+  unitsCountry,
   celsiusToFahrenheit,
   setLocale,
+  setLocaleOverride,
+  setTimeFormat,
   getTimeByOffset,
   formatTime,
   formatDate,
@@ -282,7 +285,8 @@ import {
     // The API returns { error: true } on upstream failures; skip those.
     if (!data?.city) return
     const { city: { name, country, timezone }, list } = data
-    tempScale = usesFahrenheit(country) ? 'F' : 'C'
+    // Units follow the ?locale override's region when set, else the location.
+    tempScale = usesFahrenheit(unitsCountry(country)) ? 'F' : 'C'
     setLocale(country)
     updateLocation(name)
     initDateTime(timezone)
@@ -375,6 +379,14 @@ import {
   }
 
   const init = () => {
+    // Optional overrides from the launch URL (the settings the signage-app
+    // manifest exposes in the store): ?locale forces the language/region, ?24h
+    // forces 12h (0) or 24h (1). Both are absent/empty by default so the display
+    // auto-detects from the resolved location. Applied before the first render;
+    // they are sticky module state, so they survive the later setLocale() call.
+    const params = new URLSearchParams(window.location.search)
+    setLocaleOverride(params.get('locale'))
+    setTimeFormat(params.get('24h'))
     // fetchWeather() reschedules itself every 2 hours.
     fetchWeather()
     setBanner()

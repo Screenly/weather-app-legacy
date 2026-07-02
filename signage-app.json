@@ -1,0 +1,50 @@
+{
+  "manifestVersion": "1",
+  "id": "weather",
+  "name": "Weather",
+  "description": "A live weather display with the location, language and clock format you choose.",
+  "summary": "Live local weather for any display.",
+  "vendor": "Screenly",
+  "tags": ["Weather", "Clock"],
+  "homepage": "https://weather.srly.io/",
+  "source": "https://github.com/Screenly-Labs/weather-app",
+  "support": "https://github.com/Screenly-Labs/weather-app/issues",
+  "playback": { "duration": 30, "refreshIntervalS": 3600 },
+  "settings": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "lat": {
+        "type": "number",
+        "title": "Latitude",
+        "description": "Optional. Leave unset to auto-detect the screen's location by IP.",
+        "x-widget": "location-map"
+      },
+      "lng": {
+        "type": "number",
+        "title": "Longitude",
+        "description": "Optional. Leave unset to auto-detect the screen's location by IP.",
+        "x-widget": "location-map"
+      },
+      "locale": {
+        "type": "string",
+        "title": "Language & region",
+        "description": "Optional. Sets the display language and temperature units (°C/°F by region). Leave on Default to follow the displayed location.",
+        "default": "",
+        "enum": ["","af-ZA","ak-GH","sq","sq-AL","en-US","am-ET","ar","ar-DZ","ar-BH","ar-EG","ar-IQ","ar-JO","ar-KW","ar-LB","ar-LY","ar-MA","ar-OM","ar-QA","ar-SA","ar-SD","ar-SY","ar-TN","ar-AE","ar-YE","hy-AM","asa-TZ","en-AU","de-AT","az-Cyrl-AZ","bn-BD","be-BY","bem-ZM","bi","bs-BA","pt-BR","en-GB","bg-BG","my-MM","en-CA","ca","cgg-UG","zh-CN","zh-Hans-MO","zh-Hant-TW","hr-HR","cs-CZ","da-DK","dv","nl","nl-AN","nl-NL","dz","ebu-KE","en","en-AS","en-BZ","en-BW","en-GU","en-HK","en-IE","en-JM","en-MT","en-MH","en-MU","en-NA","en-NZ","en-MP","en-PK","en-PH","en-SG","en-TT","en-UM","en-VI","en-ZW","et-EE","pt-PT","es-ES","fo-FO","fi-FI","nl-BE","fr","fr-BJ","fr-BF","fr-BI","fr-CM","fr-CF","fr-TD","fr-KM","fr-CG","fr-CD","fr-CI","fr-DJ","fr-GQ","fr-FR","fr-GA","fr-GP","fr-GN","fr-LU","fr-MG","fr-ML","fr-MQ","fr-MC","fr-NE","fr-RE","fr-RW","fr-SN","fr-BL","fr-MF","fr-TG","ka-GE","de-DE","de-LI","el-CY","el-GR","ha-Latn-NG","he-IL","hi-IN","hu-HU","is-IS","id-ID","it","it-IT","ja-JP","kea-CV","kl-GL","kk-Cyrl-KZ","km-KH","ko","ko-KR","ky","lo","lv-LV","lt-LT","mk-MK","ms-BN","ms-MY","es-MX","ro-MD","mn","ne-NP","no","nb-NO","ps-AF","fa-IR","pl-PL","pt","pt-GW","pt-MZ","ro-RO","ru-RU","sm","sr-Cyrl-ME","sr-Cyrl-RS","si-LK","sk-SK","sl-SI","so-SO","es","es-AR","es-BO","es-CL","es-CO","es-CR","es-DO","es-EC","es-SV","es-GT","es-HN","es-NI","es-PA","es-PY","es-PE","es-PR","es-UY","es-VE","sv","sv-SE","fr-CH","tg","th-TH","ti-ER","to-TO","tr-TR","tk","uk-UA","uz-Cyrl-UZ","vi-VN"],
+        "x-enumLabels": ["Default","Afrikaans (South Africa)","Akan (Ghana)","Albanian","Albanian (Albania)","American English","Amharic (Ethiopia)","Arabic","Arabic (Algeria)","Arabic (Bahrain)","Arabic (Egypt)","Arabic (Iraq)","Arabic (Jordan)","Arabic (Kuwait)","Arabic (Lebanon)","Arabic (Libya)","Arabic (Morocco)","Arabic (Oman)","Arabic (Qatar)","Arabic (Saudi Arabia)","Arabic (Sudan)","Arabic (Syria)","Arabic (Tunisia)","Arabic (United Arab Emirates)","Arabic (Yemen)","Armenian (Armenia)","Asu (Tanzania)","Australian English","Austrian German","Azerbaijani (Cyrillic, Azerbaijan)","Bangla (Bangladesh)","Belarusian (Belarus)","Bemba (Zambia)","Bislama","Bosnian (Bosnia & Herzegovina)","Brazilian Portuguese","British English","Bulgarian (Bulgaria)","Burmese (Myanmar [Burma])","Canadian English","Catalan","Chiga (Uganda)","Chinese (China)","Chinese (Simplified, Macao SAR China)","Chinese (Traditional, Taiwan)","Croatian (Croatia)","Czech (Czechia)","Danish (Denmark)","Divehi","Dutch","Dutch (Curaçao)","Dutch (Netherlands)","Dzongkha","Embu (Kenya)","English","English (American Samoa)","English (Belize)","English (Botswana)","English (Guam)","English (Hong Kong SAR China)","English (Ireland)","English (Jamaica)","English (Malta)","English (Marshall Islands)","English (Mauritius)","English (Namibia)","English (New Zealand)","English (Northern Mariana Islands)","English (Pakistan)","English (Philippines)","English (Singapore)","English (Trinidad & Tobago)","English (U.S. Outlying Islands)","English (U.S. Virgin Islands)","English (Zimbabwe)","Estonian (Estonia)","European Portuguese","European Spanish","Faroese (Faroe Islands)","Finnish (Finland)","Flemish","French","French (Benin)","French (Burkina Faso)","French (Burundi)","French (Cameroon)","French (Central African Republic)","French (Chad)","French (Comoros)","French (Congo - Brazzaville)","French (Congo - Kinshasa)","French (Côte d’Ivoire)","French (Djibouti)","French (Equatorial Guinea)","French (France)","French (Gabon)","French (Guadeloupe)","French (Guinea)","French (Luxembourg)","French (Madagascar)","French (Mali)","French (Martinique)","French (Monaco)","French (Niger)","French (Réunion)","French (Rwanda)","French (Senegal)","French (St. Barthélemy)","French (St. Martin)","French (Togo)","Georgian (Georgia)","German (Germany)","German (Liechtenstein)","Greek (Cyprus)","Greek (Greece)","Hausa (Latin, Nigeria)","Hebrew (Israel)","Hindi (India)","Hungarian (Hungary)","Icelandic (Iceland)","Indonesian (Indonesia)","Italian","Italian (Italy)","Japanese (Japan)","Kabuverdianu (Cape Verde)","Kalaallisut (Greenland)","Kazakh (Cyrillic, Kazakhstan)","Khmer (Cambodia)","Korean","Korean (South Korea)","Kyrgyz","Lao","Latvian (Latvia)","Lithuanian (Lithuania)","Macedonian (North Macedonia)","Malay (Brunei)","Malay (Malaysia)","Mexican Spanish","Moldavian","Mongolian","Nepali (Nepal)","Norwegian","Norwegian Bokmål (Norway)","Pashto (Afghanistan)","Persian (Iran)","Polish (Poland)","Portuguese","Portuguese (Guinea-Bissau)","Portuguese (Mozambique)","Romanian (Romania)","Russian (Russia)","Samoan","Serbian (Cyrillic, Montenegro)","Serbian (Cyrillic, Serbia)","Sinhala (Sri Lanka)","Slovak (Slovakia)","Slovenian (Slovenia)","Somali (Somalia)","Spanish","Spanish (Argentina)","Spanish (Bolivia)","Spanish (Chile)","Spanish (Colombia)","Spanish (Costa Rica)","Spanish (Dominican Republic)","Spanish (Ecuador)","Spanish (El Salvador)","Spanish (Guatemala)","Spanish (Honduras)","Spanish (Nicaragua)","Spanish (Panama)","Spanish (Paraguay)","Spanish (Peru)","Spanish (Puerto Rico)","Spanish (Uruguay)","Spanish (Venezuela)","Swedish","Swedish (Sweden)","Swiss French","Tajik","Thai (Thailand)","Tigrinya (Eritrea)","Tongan (Tonga)","Turkish (Türkiye)","Turkmen","Ukrainian (Ukraine)","Uzbek (Cyrillic, Uzbekistan)","Vietnamese (Vietnam)"]
+      },
+      "24h": {
+        "type": "string",
+        "title": "Clock format",
+        "default": "",
+        "enum": ["", "0", "1"],
+        "x-enumLabels": ["Default", "12-hour", "24-hour"]
+      }
+    }
+  },
+  "launch": {
+    "baseUrl": "https://weather.srly.io/",
+    "template": "{?lat,lng,locale,24h}"
+  }
+}

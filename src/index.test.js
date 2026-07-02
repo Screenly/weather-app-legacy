@@ -165,6 +165,38 @@ describe('Static asset caching (/static/*)', () => {
   })
 })
 
+describe('Signage-app manifest (/.well-known/signage-app.json)', () => {
+  it('serves the manifest as JSON with open CORS, anonymously', async () => {
+    const res = await app.request('http://localhost/.well-known/signage-app.json')
+
+    expect(res.status).toBe(200)
+    // The store and players fetch it cross-origin, so CORS must be open and the
+    // payload declared as JSON.
+    expect(res.headers.get('Content-Type')).toContain('application/json')
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*')
+
+    const body = await res.json()
+    expect(body.manifestVersion).toBe('1')
+    expect(body.id).toBe('weather')
+    expect(body.launch.baseUrl).toBe('https://weather.srly.io/')
+    // The launch template's variables must be the accepted query params. A
+    // single {?...} expression (not {?lat,lng}{&locale}{&24h}) keeps every
+    // subset valid: omitting location auto-detects it, and a settings-only
+    // launch still yields a well-formed ?24h=… instead of a stray &24h=….
+    expect(Object.keys(body.settings.properties)).toEqual(['lat', 'lng', 'locale', '24h'])
+    expect(body.settings.properties['24h'].enum).toEqual(['', '0', '1'])
+    expect(body.settings.properties.locale.enum).toContain('de-DE')
+    expect(body.launch.template).toBe('{?lat,lng,locale,24h}')
+  })
+
+  it('is not shadowed by the location redirect on the / route', async () => {
+    // The / handler 301-redirects location-less requests; the well-known path
+    // must resolve to the manifest, not that redirect.
+    const res = await app.request('http://localhost/.well-known/signage-app.json')
+    expect(res.status).toBe(200)
+  })
+})
+
 describe('Weather API caching (/api/weather)', () => {
   it('caches a 200 upstream response and serves repeats from cache', async () => {
     const cache = makeCache()
