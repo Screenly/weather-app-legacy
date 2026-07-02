@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 
 // Unit tests for the client-side locale logic in assets/static/js/locale.js.
 // These pure helpers were extracted from main.js into their own ES module so
@@ -8,6 +8,8 @@ import {
   resolveLocale,
   usesFahrenheit,
   setLocale,
+  setTimeFormat,
+  resolveHour12,
   formatTime,
   formatDate,
   getTimeByOffset,
@@ -76,6 +78,50 @@ describe('time formatting (#1, #4)', () => {
   it('renders the location wall-clock from the timezone offset', () => {
     setLocale('JP')
     expect(timeAt(9)).toBe('22:30')
+  })
+})
+
+describe('12h/24h override (?24h launch setting)', () => {
+  // The override is sticky module state; clear it after each case so the other
+  // tests keep seeing the location's locale default.
+  afterEach(() => setTimeFormat(''))
+
+  it('maps the 24h setting values to an hour12 override', () => {
+    expect(resolveHour12('0')).toBe(true) // 12-hour
+    expect(resolveHour12('1')).toBe(false) // 24-hour
+    // Default / empty / unrecognized -> defer to the locale.
+    expect(resolveHour12('')).toBeUndefined()
+    expect(resolveHour12(null)).toBeUndefined()
+    expect(resolveHour12(undefined)).toBeUndefined()
+    expect(resolveHour12('yes')).toBeUndefined()
+  })
+
+  it('forces a 12-hour clock with AM/PM when ?24h=0, even for a 24h locale', () => {
+    setLocale('GB') // en-GB is normally 24-hour
+    setTimeFormat('0')
+    expect(timeAt(1)).toMatch(/^2:30(\s| )?PM$/i) // 14:30 -> 2:30 PM
+  })
+
+  it('forces a 24-hour clock when ?24h=1, even for a 12h locale', () => {
+    setLocale('US') // en-US is normally 12-hour
+    setTimeFormat('1')
+    const time = timeAt(-4) // 09:30
+    expect(time).not.toMatch(/AM|PM/i)
+    expect(time).toMatch(/^0?9:30$/)
+  })
+
+  it('an override survives a later setLocale() (sticky across rebuilds)', () => {
+    setTimeFormat('1') // force 24h
+    setLocale('US') // rebuilds formatters; must keep the 24h override
+    expect(timeAt(-4)).not.toMatch(/AM|PM/i)
+  })
+
+  it('restores the locale default when the setting is empty', () => {
+    setLocale('US')
+    setTimeFormat('1') // force 24h
+    expect(timeAt(-4)).not.toMatch(/AM|PM/i)
+    setTimeFormat('') // back to locale default (12h for en-US)
+    expect(timeAt(-4)).toMatch(/AM|PM/i)
   })
 })
 

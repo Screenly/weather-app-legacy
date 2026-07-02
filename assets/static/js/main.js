@@ -2,6 +2,7 @@ import {
   usesFahrenheit,
   celsiusToFahrenheit,
   setLocale,
+  setTimeFormat,
   getTimeByOffset,
   formatTime,
   formatDate,
@@ -375,6 +376,11 @@ import {
   }
 
   const init = () => {
+    // Optional 12/24h override from the launch URL (?24h=0 -> 12h, ?24h=1 -> 24h;
+    // absent/empty keeps the location's locale default). This is the setting the
+    // signage-app manifest exposes in the store. Applied before the first render;
+    // it survives the later setLocale() call (the override is sticky module state).
+    setTimeFormat(new URLSearchParams(window.location.search).get('24h'))
     // fetchWeather() reschedules itself every 2 hours.
     fetchWeather()
     setBanner()

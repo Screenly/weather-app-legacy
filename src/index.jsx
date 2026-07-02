@@ -7,6 +7,7 @@ import App from './components/App'
 import weather from './routes/weather'
 import { locationHeaders, locationQueryParams, defaultLocation } from './constants'
 import { trimCoordinates } from './utils'
+import signageManifest from '../signage-app.json'
 
 const app = new Hono()
 
@@ -40,6 +41,17 @@ app.use('/static/*', async (c, next) => {
     : 'public, max-age=300')
 })
 app.use('/static/*', serveStatic({ root: './', manifest }))
+
+// The signage-app manifest lets the app store and signage players (Anthias,
+// Screenly) render this app's settings form and build its launch URL from a
+// single source of truth instead of a hand-coded form. Consumers fetch it
+// cross-origin, so CORS must be open; a dedicated route (not /static)
+// guarantees the application/json content type and CORS header.
+app.get('/.well-known/signage-app.json', (c) =>
+  c.json(signageManifest, 200, {
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'public, max-age=3600'
+  }))
 
 app.get('/', async (c) => {
   const qLat = c.req.query(locationQueryParams.lat)

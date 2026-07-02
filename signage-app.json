@@ -1,0 +1,32 @@
+{
+  "manifestVersion": "1",
+  "id": "weather",
+  "name": "Weather",
+  "description": "A live weather display with the location and clock format you choose.",
+  "summary": "Live local weather for any display.",
+  "vendor": "Screenly",
+  "tags": ["Weather", "Clock"],
+  "homepage": "https://weather.srly.io/",
+  "source": "https://github.com/Screenly-Labs/weather-app",
+  "support": "https://github.com/Screenly-Labs/weather-app/issues",
+  "playback": { "duration": 30, "refreshIntervalS": 3600 },
+  "settings": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "lat": { "type": "number", "title": "Latitude", "x-widget": "location-map" },
+      "lng": { "type": "number", "title": "Longitude", "x-widget": "location-map" },
+      "24h": {
+        "type": "string",
+        "title": "Clock format",
+        "default": "",
+        "enum": ["", "0", "1"],
+        "x-enumLabels": ["Default", "12-hour", "24-hour"]
+      }
+    }
+  },
+  "launch": {
+    "baseUrl": "https://weather.srly.io/",
+    "template": "{?lat,lng}{&24h}"
+  }
+}

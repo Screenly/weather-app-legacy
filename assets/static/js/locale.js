@@ -31,6 +31,10 @@ const rtlLanguages = ['ar', 'fa', 'he', 'ps', 'dv', 'ur', 'ckb', 'sd', 'yi']
 
 // BCP-47 locale for the displayed location, plus cached Intl formatters.
 let locale = 'en-GB'
+// Explicit 12h/24h override from the ?24h launch setting: true forces a 12-hour
+// clock, false forces 24-hour, undefined leaves the choice to the locale. This
+// is the query param the signage-app manifest's "24h" setting drives.
+let hour12Override
 let timeFormatter
 let dateFormatterLong
 let dateFormatterShort
@@ -39,7 +43,10 @@ const buildFormatters = () => {
   // Pin the Gregorian calendar so the date always matches the (Gregorian)
   // forecast — otherwise locales like ar-SA would render a Hijri date.
   // Names, ordering and numerals stay localized.
-  const timeOpts = { hour: 'numeric', minute: '2-digit' }
+  // Only pin hour12 when the ?24h setting forced it; otherwise omit it so Intl
+  // keeps the location locale's own 12/24h convention.
+  const h12 = hour12Override === undefined ? {} : { hour12: hour12Override }
+  const timeOpts = { hour: 'numeric', minute: '2-digit', ...h12 }
   const dateLongOpts = { weekday: 'long', month: 'short', day: 'numeric', calendar: 'gregory' }
   const dateShortOpts = { weekday: 'short', month: 'short', day: 'numeric', calendar: 'gregory' }
   try {
@@ -57,6 +64,23 @@ const buildFormatters = () => {
 }
 
 export const resolveLocale = (code) => locales[code] || FALLBACK_LOCALE
+
+// Map the ?24h launch setting to an hour12 override. The manifest's "24h" enum
+// is "" (locale default), "0" (12-hour) and "1" (24-hour); any other value is
+// treated as the default. Returns true for a forced 12h clock, false for a
+// forced 24h clock, or undefined to defer to the locale.
+export const resolveHour12 = (value) => {
+  if (value === '1') return false
+  if (value === '0') return true
+  return undefined
+}
+
+// Apply the ?24h launch setting (see resolveHour12). Passing '' / undefined /
+// any unrecognized value clears the override and restores the locale default.
+export const setTimeFormat = (value) => {
+  hour12Override = resolveHour12(value)
+  buildFormatters()
+}
 
 export const setLocale = (code) => {
   locale = resolveLocale(code)
