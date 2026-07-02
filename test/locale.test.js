@@ -28,16 +28,28 @@ const DT = Math.floor(Date.parse('2026-06-20T13:30:00Z') / 1000)
 const timeAt = (offsetHours) => formatTime(getTimeByOffset(offsetHours * 3600, DT))
 const dateAt = (offsetHours) => formatDate(getTimeByOffset(offsetHours * 3600, DT))
 
-describe('resolveLocale', () => {
-  it('maps known country codes to their locale', () => {
+describe('resolveLocale (CLDR likely-subtags)', () => {
+  it('maps a country to its CLDR likely locale, script dropped', () => {
     expect(resolveLocale('US')).toBe('en-US')
     expect(resolveLocale('FR')).toBe('fr-FR')
     expect(resolveLocale('JP')).toBe('ja-JP')
     expect(resolveLocale('PR')).toBe('es-PR')
+    expect(resolveLocale('BR')).toBe('pt-BR')
+    expect(resolveLocale('CN')).toBe('zh-CN')
+    // Region re-derives its likely script, so the bare tag still renders it.
+    expect(resolveLocale('TW')).toBe('zh-TW')
   })
 
-  it('falls back to en-GB for unknown / missing codes (#3)', () => {
-    expect(resolveLocale('ZZ')).toBe('en-GB')
+  it('uses CLDR national language, not a hand-picked signage default', () => {
+    // These differ from the old curated table on purpose (CLDR adopted wholesale).
+    expect(resolveLocale('HK')).toBe('zh-HK') // was en-HK
+    expect(resolveLocale('KZ')).toBe('ru-KZ') // was kk-Cyrl-KZ
+  })
+
+  it('falls back to en-GB for unknown / malformed / missing codes (#3)', () => {
+    expect(resolveLocale('ZZ')).toBe('en-GB') // CLDR "unknown region"
+    expect(resolveLocale('XX')).toBe('en-GB') // well-formed but not assigned
+    expect(resolveLocale('T1')).toBe('en-GB') // malformed (Cloudflare Tor)
     expect(resolveLocale('')).toBe('en-GB')
     expect(resolveLocale(undefined)).toBe('en-GB')
   })
